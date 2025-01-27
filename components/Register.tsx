@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import "../styles/Register.css";
 import axios from "axios";
@@ -6,11 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface FormData {
-    username: string;
-    email: string;
-    password: string;
-    roles: string[]; // roles je niz stringova
-  }
+  username: string;
+  email: string;
+  password: string;
+  roles: string[]; // roles je niz stringova
+}
 
 const Register = () => {
   const [error, setError] = useState("");
@@ -41,34 +41,30 @@ const Register = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const response = await axios.post('https://localhost:7273/api/Auth/Register', formData);
-      setError('');
-      router.push('/home') // Preusmeri na stranicu dobrodošlice
-      localStorage.setItem('token', response.data.jwtToken);
-
+      const response = await axios.post(
+        "https://localhost:7273/api/Auth/Register",
+        formData
+      );
+      setError("");
+      router.push("/home"); // Preusmeri na stranicu dobrodošlice
+      document.cookie = `token=${response.data.jwtToken}`;
     } catch (error: any) {
-        if (error.response?.data?.errors) {
-          const errors = error.response.data.errors;
-          console.error("Validation errors:", errors);
-  
-          // Example: Flatten and display all validation errors
-          alert(
-            "Error:\n" +
-              Object.values(errors)
-                .flat()
-                .join("\n")
-          );
-          setError("Registration failed. Please check the form and try again.");
-        } else {
-          console.error("Error register:", error);
-          setError("Registration failed. Please try again later.");
-        }
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        console.error("Validation errors:", errors);
+
+        // Example: Flatten and display all validation errors
+        setError("Error:\n" + Object.values(errors).flat().join("\n"));
+      } else {
+        console.error("Error register:", error);
+        setError(error.response.data);
       }
+    }
   };
 
   return (
     <div className="register-container">
-      <h2>Register</h2>
+      <h2 className="text-center mb-4 font-bold text-xl">Register</h2>
       <form className="register-form" onSubmit={handleSubmit}>
         <div className="username-container">
           <label>Username:</label>
@@ -97,13 +93,19 @@ const Register = () => {
             onChange={handleChange}
           />
         </div>
-        <button className="submit" type="submit">
+        <button
+          className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+          type="submit"
+        >
           Register
         </button>
         <div className="go-to-login">
-          <p>
+          <p className="text-sm text-gray-600 text-center mt-4">
             You don't have an account? Please{" "}
-            <Link href="/login" className="login-link">
+            <Link
+              href="/login"
+              className="text-blue-500 font-medium hover:underline text-lg"
+            >
               Login
             </Link>
           </p>
