@@ -70,10 +70,10 @@ const Login = () => {
         </button>
         <div className="go-to-registration">
           <p className="text-sm text-gray-600 text-center mt-4">
-            You don't have an account? Please{" "}
+            You don't have an account? <br/> Please{" "}
             <Link
               href="/register"
-              className="text-blue-500 font-medium hover:underline"
+              className="text-blue-500 font-medium hover:underline text-lg"
             >
               create new account.
             </Link>
