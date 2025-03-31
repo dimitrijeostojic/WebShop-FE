@@ -4,44 +4,54 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
     const token = document.cookie.split("=")[1];
     if (token) {
       const decoded: any = jwtDecode(token);
-      console.log(decoded);
       const extractedName =
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-      console.log(extractedName);
-      setUsername(extractedName);
+        decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+      setFirstName(extractedName);
     }
   }, []);
 
+  const handleLogout = () => {
+    // Brišemo kolačić tako što postavljamo datum isteka u prošlost
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  };
+
   return (
-    <nav className="fixed top-0 left-0 w-full bg-violet-500 text-white py-4 px-6 shadow-md z-50">
-      <div className="flex justify-between items-center">
-        <div className="username w-1/5">
-        <p className="text-xl font-bold text-center">
-          {username ? `Welcome ${username}` : "Home"}
-        </p>
+    <nav className="fixed top-0 left-0 w-full bg-violet-600 text-white shadow-md z-50">
+      <div className="flex justify-around items-center py-5">
+        <div className="firstName">
+          <div className="text-lg font-semibold transition-all duration-300 hover:text-violet-200">
+            {firstName ? `👋 Welcome, ${firstName}` : "🐾 PetShop"}
+          </div>
         </div>
-        <div className="w-3/5 flex justify-evenly items-center">
-        <Link href="/home" className="hover:underline">
+        <div className="w-2/5 flex justify-evenly items-center">
+          <Link href="/home" className="hover:text-violet-200 transition-all">
             Home
           </Link>
-          <Link href="/about" className="hover:underline">
+          <Link href="/about" className="hover:text-violet-200 transition-all">
             About
           </Link>
-          <Link href="/shop" className="hover:underline">
+          <Link href="/shop" className="hover:text-violet-200 transition-all">
             Shop
           </Link>
-          <Link href="/profile" className="hover:underline">
+          <Link
+            href="/profile"
+            className="hover:text-violet-200 transition-all"
+          >
             Profile
           </Link>
         </div>
-        <div className="link-logout w-1/5 text-center">
-          <Link href="/login" className="hover:underline">
+        <div className="link-logout">
+          <Link
+            href="/login"
+            onClick={handleLogout}
+            className="bg-white text-violet-600 px-6 py-2 rounded-md font-medium hover:bg-violet-200 transition"
+          >
             Logout
           </Link>
         </div>
