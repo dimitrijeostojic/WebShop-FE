@@ -51,7 +51,9 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h2 className="text-center mb-4 font-bold text-xl">Login</h2>
+      <div className="login-header">
+        <h2 className="text-center mb-4 font-bold text-xl">Login</h2>
+      </div>
       <form onSubmit={handleSubmit}>
         <div className="username-container">
           <label>Username:</label>
@@ -73,13 +75,14 @@ const Login = () => {
             required
           />
         </div>
-
-        <button
-          className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-          type="submit"
-        >
-          Login
-        </button>
+        <div className="login-button">
+          <button
+            className="bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+            type="submit"
+          >
+            Login
+          </button>
+        </div>
         <div className="go-to-registration">
           <p className="text-sm text-gray-600 text-center mt-4">
             You don't have an account? <br /> Please{" "}

@@ -57,7 +57,9 @@ const Register = () => {
 
   return (
     <div className="register-container">
-      <h2 className="text-center mb-4 font-bold text-xl">Register</h2>
+      <div className="register-header">
+        <h2 className="text-center mb-4 font-bold text-xl">Register</h2>
+      </div>
       <form className="register-form" onSubmit={handleSubmit}>
         <div className="fistname-container">
           <label>First Name:</label>
@@ -109,12 +111,14 @@ const Register = () => {
             required
           />
         </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-          type="submit"
-        >
-          Register
-        </button>
+        <div className="register-button-container">
+          <button
+            className="bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+            type="submit"
+          >
+            Register
+          </button>
+        </div>
         <div className="go-to-login">
           <p className="text-sm text-gray-600 text-center mt-4">
             Already have an account? Please{" "}

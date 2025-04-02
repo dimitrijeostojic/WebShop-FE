@@ -1,18 +1,81 @@
-import React from "react";
+"use client";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import Navbar from "./Navbar";
 import ProductCard from "./ProductCard";
-import Footer from "./Footer";
+import axios from "axios";
+
+interface Product {
+  productId: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
+interface Category {
+  categoryId: string;
+  categoryName: string;
+  
+}
 
 const Home = () => {
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [categories, setCategories] = React.useState<Category[]>([]);
+
+  const iconArray = ["🍖" , "🎒", "🧸", "🛁"];
+
+  const fetchCategories = async () => {
+    try {
+      const token = document.cookie
+  .split("; ")
+  .find((row) => row.startsWith("token="))
+  ?.split("=")[1];
+      const response = await axios.get("https://localhost:7273/api/Category", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Dodaj token u zaglavlje
+        },
+      });
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const token = document.cookie
+  .split("; ")
+  .find((row) => row.startsWith("token="))
+  ?.split("=")[1];
+      const response = await axios.get("https://localhost:7273/api/Product", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Dodaj token u zaglavlje
+        },
+      });
+      const selected = response.data.slice(0, 8);
+      setProducts(selected);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
   return (
     <main className="pt-20">
       {/* Hero Section */}
       <section className="text-center mb-16">
-        <h1 className="text-4xl font-bold mb-4">Dobrodošli u PetShop 🐾</h1>
-        <p className="text-lg mb-6 text-gray-700">
-          Sve za vaše ljubimce na jednom mestu
-        </p>
+        <div className="hero-section-header">
+          <h1 className="text-4xl font-bold mb-4">Dobrodošli u PetShop 🐾</h1>
+        </div>
+        <div className="hero-section-paragraph">
+          <p className="text-lg mb-6 text-gray-700">
+            Sve za vaše ljubimce na jednom mestu
+          </p>
+        </div>
         <div className="flex justify-center gap-4">
           <Link
             href="/shop"
@@ -30,22 +93,19 @@ const Home = () => {
       </section>
 
       {/* Categories */}
-      <section className="mb-16 px-6">
-        <h2 className="text-2xl font-semibold mb-4">Kategorije</h2>
+      <section className="mb-16 px-6 ">
+        <div className="categories-header">
+          <h2 className="text-2xl font-semibold mb-4">Kategorije</h2>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { name: "Hrana", icon: "🍖" },
-            { name: "Oprema", icon: "🎒" },
-            { name: "Igračke", icon: "🧸" },
-            { name: "Nega", icon: "🛁" },
-          ].map((category) => (
+          {categories.map((category, index) => (
             <Link
-              key={category.name}
-              href={`/shop?category=${category.name.toLowerCase()}`}
-              className="border rounded-xl p-6 text-center hover:shadow-md bg-white"
+              key={category.categoryId}
+              href={`/shop?category=${category.categoryId}`}
+              className="border rounded-xl p-6 text-center hover:shadow-md transition-all duration-300 hover:bg-violet-50"
             >
-              <div className="text-4xl mb-2">{category.icon}</div>
-              <div className="text-lg font-medium">{category.name}</div>
+              <div className="text-4xl mb-2">{iconArray[index % iconArray.length]}</div>
+              <div className="text-lg font-medium">{category.categoryName}</div>
             </Link>
           ))}
         </div>
@@ -55,7 +115,16 @@ const Home = () => {
       <section className="mb-16 px-6">
         <h2 className="text-2xl font-semibold mb-4">Istaknuti proizvodi</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <ProductCard />
+          {products.map((prod, index) => (
+            <ProductCard
+              key={index}
+              productId={prod.productId}
+              description={prod.description}
+              name={prod.name}
+              imageUrl={prod.imageUrl}
+              price={prod.price}
+            />
+          ))}
         </div>
       </section>
 
