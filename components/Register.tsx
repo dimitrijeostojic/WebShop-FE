@@ -1,9 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import "../styles/Register.css";
-import axios from "axios";
+// import api from "../utils/axiosSetup";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface FormData {
   firstName: string;
@@ -33,7 +34,8 @@ const Register = () => {
         "https://localhost:7273/api/Auth/Register",
         formData
       );
-      document.cookie = `token=${response.data.jwtToken}`; // Postavljanje tokena u kolačić
+      document.cookie = `token=${response.data.jwtToken}; path=/`;
+      // document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
       router.push("/home");
     } catch (error: any) {
       if (error.response?.data?.errors) {

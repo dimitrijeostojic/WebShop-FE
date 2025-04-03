@@ -2,8 +2,9 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import "../styles/Login.css";
-import axios from "axios";
+// import api from "../utils/axiosSetup";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface FormData {
   username: string;
@@ -37,7 +38,9 @@ const Login = () => {
         formData
       );
       // Uspešan login
-      document.cookie = `token=${response.data.jwtToken}`; // Postavljanje tokena u kolačić
+      document.cookie = `token=${response.data.jwtToken}; path=/`;
+      // document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
+      console.log("Redirecting to /home...");
       router.push("/home");
     } catch (error: any) {
       if (error.response?.data?.errors) {

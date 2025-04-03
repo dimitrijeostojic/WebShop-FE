@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import axios from "axios";
+// import api from "../utils/axiosSetup";
 
 interface Product {
   productId: string;
@@ -30,6 +31,7 @@ const Home = () => {
   .split("; ")
   .find((row) => row.startsWith("token="))
   ?.split("=")[1];
+
       const response = await axios.get("https://localhost:7273/api/Category", {
         headers: {
           Authorization: `Bearer ${token}`, // Dodaj token u zaglavlje

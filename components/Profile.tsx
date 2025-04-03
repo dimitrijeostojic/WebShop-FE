@@ -19,6 +19,7 @@ const Profile = () => {
   const router = useRouter();
 
   useEffect(() => {
+    
     if (token) {
       const name = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
       const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
@@ -65,14 +66,29 @@ const Profile = () => {
 
         <div className="border-t pt-4">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">
-            {role === "Manager"
-              ? "Moji proizvodi"
-              : "Moje porudžbine"}
+          {(() => {
+      switch (role) {
+        case "Manager":
+          return "Moji proizvodi";
+        case "Admin":
+          return "Svi proizvodi";
+        case "RegularUser":
+          return "Moje porudžbine";
+        default:
+          return;
+      }
+    })()}
           </h3>
           <p className="text-sm text-gray-500">
-          {role === "Manager"
-              ? "Trenutno nema vaših proizvoda. Ova sekcija može prikazivati sve vaše proizvode."
-              : "Trenutno nemate prikazane porudžbine. Ova sekcija može prikazivati sve vaše narudžbine."}
+          {(() => {
+            if (role === "Manager") {
+              return "Trenutno nema vaših proizvoda. Ova sekcija može prikazivati sve vaše proizvode.";
+            }
+            if (role === "regularUser") {
+              return "Trenutno nemate prikazane porudžbine. Ova sekcija može prikazivati sve vaše narudžbine.";
+            }
+            return "Trenutno nema ni jednog proizvoda. Ova sekcija može prikazivati sve proizvode.";
+          })()}
           </p>
         </div>
 
