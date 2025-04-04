@@ -24,21 +24,21 @@ export default function ProductDetails() {
     ?.split("=")[1];
 
 
-    const fetchProduct = async () => {
-        try {
-          const response = await axios.get(
-            `https://localhost:7273/api/Product/${id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          setProduct(response.data);
-        } catch (err) {
-          console.error("Failed to fetch product", err);
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.get(
+        `https://localhost:7273/api/Product/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      };
+      );
+      setProduct(response.data);
+    } catch (err) {
+      console.error("Failed to fetch product", err);
+    }
+  };
 
   useEffect(() => {
     fetchProduct();
@@ -46,7 +46,7 @@ export default function ProductDetails() {
 
   const handleAddToCart = async () => {
     if (!product) return;
-  
+
     try {
       await axios.post(
         "https://localhost:7273/api/Cart/addItemToCart",
@@ -60,19 +60,20 @@ export default function ProductDetails() {
           },
         }
       );
-      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const existing = cart.find(
-        (item: any) => item.productId === product.productId
-      );
-  
+
+      const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      const existing = cartItems.find((item: any) => item.productId === product.productId);
+
       if (existing) {
         existing.quantity += quantity;
       } else {
-        cart.push({ ...product, quantity });
+        cartItems.push({ ...product, quantity });
       }
-  
-      localStorage.setItem("cart", JSON.stringify(cart));
-  
+
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+
+
       alert("✅ Proizvod dodat u korpu!");
       window.dispatchEvent(new Event("cart-updated"));
     } catch (error) {
@@ -80,6 +81,7 @@ export default function ProductDetails() {
       alert("❌ Nije moguće dodati u korpu.");
     }
   };
+
 
   if (!product) return <div className="p-8">Učitavanje...</div>;
 

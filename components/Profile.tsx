@@ -1,101 +1,200 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
+import axios from "axios";
+import ProductCard from "./ProductCard";
 
 interface DecodedToken {
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": string;
+}
+
+interface Order {
+  orderDate: Date;
+  orderId: string;
+  orderItems: OrderItem[];
+  userId: string;
+}
+
+interface OrderItem {
+  orderId: string;
+  orderItemId: string;
+  price: number;
+  product: Product;
+  quantity: number;
+}
+
+interface Product {
+  categoryId: string;
+  categoryName: string;
+  createdBy: string;
+  description: string;
+  imageUrl: string;
+  name: string;
+  price: number;
+  productId: string;
+  stock: number;
 }
 
 const Profile = () => {
   const [name, setName] = useState<string>("");
   const [role, setRole] = useState<string>("");
+  const [id, setId] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-  const decodedToken = jwtDecode(token as string) as DecodedToken;
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
+  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+  const decodedToken = token ? (jwtDecode(token) as DecodedToken) : null;
+
   useEffect(() => {
-    
-    if (token) {
+    if (token && decodedToken) {
       const name = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
       const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
       const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+      const id = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+      console.log(id);
       setName(name);
       setRole(role);
       setEmail(email);
+      setId(id);
+      if (role === "RegularUser") fetchMyOrders();
+      if (role === "Admin") fetchAllOrders();
+      if (role === "Manager") fetchManagerProducts();
     }
   }, []);
+
+  const fetchMyOrders = async () => {
+    try {
+      const res = await axios.get("https://localhost:7273/api/Order/GetMyOrders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Greška prilikom preuzimanja mojih porudžbina", err);
+    }
+  };
+
+  const fetchAllOrders = async () => {
+    try {
+      const res = await axios.get("https://localhost:7273/api/Order", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Greška prilikom preuzimanja svih porudžbina", err);
+    }
+  };
+
+  const fetchManagerProducts = async () => {
+    try {
+      const res = await axios.get("https://localhost:7273/api/Product", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+console.log(res.data);
+console.log(res.data.filter((item: Product) => item.createdBy === id))
+// setProducts();
+console.log(products);
+
+    } catch (err) {
+      console.error("Greška prilikom preuzimanja proizvoda menadžera", err);
+    }
+  };
 
   const handleLogout = () => {
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     router.push("/login");
   };
 
-  if (!name || !role || !email)
+  if (!name || !role || !email) {
     return <div className="text-center mt-10">Učitavanje profila...</div>;
+  }
 
   return (
-    <div className="max-w-3xl mx-auto pt-24 px-6">
-      <h1 className="text-3xl font-bold text-violet-600 mb-6 text-center">
-        Moj Profil
-      </h1>
-
-      <div className="bg-white shadow-md rounded-xl p-6 space-y-6">
-        <div className="flex items-center space-x-4">
+    <div className="max-w-5xl mx-auto pt-24 px-4">
+      <div className="bg-white rounded-2xl shadow-lg p-8 space-y-8">
+        {/* Profil Info */}
+        <div className="flex items-center space-x-5 border-b pb-6">
           <FaUserCircle size={60} className="text-violet-500" />
           <div>
-            <h2 className="text-xl font-semibold">
-              {name}
-            </h2>
-            <p className="text-sm text-gray-600">
-              {email}
+            <h2 className="text-2xl font-bold text-violet-700">{name}</h2>
+            <p className="text-sm text-gray-600">{email}</p>
+            <p className="text-sm mt-1 text-gray-500">
+              Uloga: <span className="font-semibold capitalize">{role}</span>
             </p>
           </div>
         </div>
 
-        <div className="border-t pt-4">
-          <p>
-            <span className="font-semibold">Uloga:</span>{" "}
-            {role}
-          </p>
-        </div>
+        {/* ADMIN & USER: Prikaz porudžbina */}
+        {(role === "Admin" || role === "RegularUser") && (
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              {role === "Admin" ? "Sve porudžbine" : "Moje porudžbine"}
+            </h3>
+            {orders.length === 0 ? (
+              <p className="text-gray-500 text-sm">Nema porudžbina za prikaz.</p>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div key={order.orderId} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-gray-50">
+                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                      <span>Datum: {new Date(order.orderDate).toLocaleDateString()}</span>
+                    </div>
+                    {order.orderItems.map((item) => (
+                      <div key={item.orderItemId} className="flex justify-between py-1 border-t text-sm">
+                        <div>
+                          <p className="font-medium text-violet-700">{item.product.name}</p>
+                          <p className="text-gray-500">{item.quantity} x {item.product.price.toFixed(2)} RSD</p>
+                        </div>
+                        <p className="font-semibold text-green-600">
+                          {(item.quantity * item.product.price).toFixed(2)} RSD
+                        </p>
+                      </div>
+                    ))}
+                    <p className="text-right text-sm font-semibold text-gray-700 mt-2">
+      Ukupno: {order.orderItems.reduce((sum, item) => sum + item.quantity * item.product.price, 0).toFixed(2)} RSD
+    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        <div className="border-t pt-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
-          {(() => {
-      switch (role) {
-        case "Manager":
-          return "Moji proizvodi";
-        case "Admin":
-          return "Svi proizvodi";
-        case "RegularUser":
-          return "Moje porudžbine";
-        default:
-          return;
-      }
-    })()}
-          </h3>
-          <p className="text-sm text-gray-500">
-          {(() => {
-            if (role === "Manager") {
-              return "Trenutno nema vaših proizvoda. Ova sekcija može prikazivati sve vaše proizvode.";
-            }
-            if (role === "regularUser") {
-              return "Trenutno nemate prikazane porudžbine. Ova sekcija može prikazivati sve vaše narudžbine.";
-            }
-            return "Trenutno nema ni jednog proizvoda. Ova sekcija može prikazivati sve proizvode.";
-          })()}
-          </p>
-        </div>
+        {/* MANAGER: Prikaz proizvoda */}
+        {role === "Manager" && (
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Moji proizvodi</h3>
+            {products.length === 0 ? (
+              <p className="text-gray-500 text-sm">Još uvek niste dodali nijedan proizvod.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {products.map((prod, index) => (
+            <ProductCard
+              key={index}
+              productId={prod.productId}
+              description={prod.description}
+              name={prod.name}
+              imageUrl={prod.imageUrl}
+              price={prod.price}
+            />
+          ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        <div className="text-center">
+        {/* Logout dugme */}
+        <div className="pt-6 border-t text-center">
           <button
             onClick={handleLogout}
-            className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition"
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full font-semibold transition"
           >
             Odjavi se
           </button>
