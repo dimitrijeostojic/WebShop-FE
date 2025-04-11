@@ -35,7 +35,6 @@ const Cart = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [customer, setCustomer] = useState({ name: "", address: "", payment: "" });
 
-
   const fetchCart = async () => {
     try {
       const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
@@ -44,7 +43,6 @@ const Cart = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
       setCart(response.data);
     } catch (error) {
       console.error("Failed to fetch cart from backend", error);
@@ -73,13 +71,10 @@ const Cart = () => {
     window.dispatchEvent(new Event("cart-updated"));
   }, [cart]);
 
- 
-
   const updateQuantity = async (productId: string, newQuantity: number) => {
     try {
       const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-      
-      const response = await axios.put(
+      await axios.put(
         `https://localhost:7273/api/Cart/cartItemQuantity/${productId}`,
         { quantity: newQuantity },
         {
@@ -88,7 +83,6 @@ const Cart = () => {
           },
         }
       );
-      console.log(response.data);
   
       const updatedCartItems = cart?.cartItems.map((item) =>
         item.productId === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
@@ -105,20 +99,14 @@ const Cart = () => {
     }
   };
 
-  
-  
-
   const removeFromCart = async (productId: string) => {
     try {
       const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-  
       const response = await axios.delete(`https://localhost:7273/api/Cart/items/${productId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      console.log(response.data);
   
       const updatedCartItems = cart?.cartItems.filter(item => item.productId !== productId);
   
@@ -133,16 +121,14 @@ const Cart = () => {
     }
   };
   
-
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-    const response = await axios.post("https://localhost:7273/api/Order/PlaceOrder",{}, {
+    await axios.post("https://localhost:7273/api/Order/PlaceOrder",{}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response.data);
     toast.success("Porudžbina uspešno poslata! 🎉");
     setCart(undefined);
     setShowCheckout(false);
@@ -153,7 +139,7 @@ const Cart = () => {
     <div className="max-w-6xl mx-auto px-4 py-20">
       <h1 className="text-4xl font-bold text-violet-700 mb-10 text-center">🛒 Tvoja korpa</h1>
 
-      {cart?.cartItems.length === 0 ? (
+      {!cart || cart?.cartItems.length === 0 ? (
         <div className="text-center text-gray-500 text-lg">
           Korpa je prazna. <Link href="/shop" className="text-violet-600 underline">Idi u prodavnicu</Link>
         </div>

@@ -18,14 +18,10 @@ export default function ProductDetails() {
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  const token = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("token="))
-    ?.split("=")[1];
-
 
   const fetchProduct = async () => {
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1]
       const response = await axios.get(
         `https://localhost:7273/api/Product/${id}`,
         {
@@ -46,8 +42,8 @@ export default function ProductDetails() {
 
   const handleAddToCart = async () => {
     if (!product) return;
-
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1]
       await axios.post(
         "https://localhost:7273/api/Cart/addItemToCart",
         {
@@ -62,7 +58,6 @@ export default function ProductDetails() {
       );
 
       const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-
       const existing = cartItems.find((item: any) => item.productId === product.productId);
 
       if (existing) {
@@ -73,7 +68,6 @@ export default function ProductDetails() {
 
       localStorage.setItem("cart", JSON.stringify(cartItems));
 
-
       alert("✅ Proizvod dodat u korpu!");
       window.dispatchEvent(new Event("cart-updated"));
     } catch (error) {
@@ -81,7 +75,6 @@ export default function ProductDetails() {
       alert("❌ Nije moguće dodati u korpu.");
     }
   };
-
 
   if (!product) return <div className="p-8">Učitavanje...</div>;
 

@@ -28,19 +28,18 @@ const Register = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError(""); // Resetovanje greške pre novog pokušaja
+    setError(""); //Reset errors before a new register attempt
     try {
       const response = await axios.post(
         "https://localhost:7273/api/Auth/Register",
         formData
       );
       document.cookie = `token=${response.data.jwtToken}; path=/`;
-      // document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
       router.push("/home");
     } catch (error: any) {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
-        // Flatten i prikazivanje svih grešaka
+        //displaying all errors
         setError("Error:\n" + Object.values(errors).flat().join("\n"));
       } else {
         setError(error.response?.data || "An unexpected error occurred.");
@@ -48,7 +47,7 @@ const Register = () => {
     }
   };
 
-  // Ažuriranje formData stanja na promenu u inputima
+  //Updating form data when input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

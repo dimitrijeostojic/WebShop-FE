@@ -12,13 +12,9 @@ interface FormData {
 }
 
 const Login = () => {
-  const [formData, setFormData] = useState<FormData>({
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState<FormData>({username: "",password: ""});
 
   const [error, setError] = useState("");
-
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,16 +27,14 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(""); // Resetuj greške pre novog pokušaja prijave
+    setError(""); // Reset errors before a new login attempt 
     try {
       const response = await axios.post(
         "https://localhost:7273/api/Auth/Login",
         formData
       );
-      // Uspešan login
+      
       document.cookie = `token=${response.data.jwtToken}; path=/`;
-      // document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
-      console.log("Redirecting to /home...");
       router.push("/home");
     } catch (error: any) {
       if (error.response?.data?.errors) {

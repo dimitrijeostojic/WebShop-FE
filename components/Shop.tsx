@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-// import api from "../utils/axiosSetup";
 import ProductCard from "@/components/ProductCard";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
@@ -14,13 +13,6 @@ interface Product {
   imageUrl: string;
 }
 
-interface DecodedToken {
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": string;
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
-  exp: number;
-}
-
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filterOn, setFilterOn] = useState("Name");
@@ -29,8 +21,6 @@ const Shop = () => {
   const [isAscending, setIsAscending] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(8);
-  const [userRole, setUserRole] = useState("");
-  const router = useRouter();
 
   const fetchProducts = async () => {
     try {

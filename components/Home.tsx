@@ -17,7 +17,6 @@ interface Product {
 const Home = () => {
   const [products, setProducts] = React.useState<Product[]>([]);
  
-
   const fetchProducts = async () => {
     try {
       const token = document.cookie
