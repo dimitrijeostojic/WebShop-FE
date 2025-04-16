@@ -107,6 +107,7 @@ const Profile = () => {
     router.push("/login");
   };
 
+
   if (!name || !role || !email) {
     return <div className="text-center mt-10">Učitavanje profila...</div>;
   }
@@ -140,7 +141,7 @@ const Profile = () => {
                   <div key={order.orderId} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-gray-50">
                     <div className="flex justify-between text-sm text-gray-600 mb-2">
                       <span>Datum: {new Date(order.orderDate).toLocaleDateString()}</span>
-                      <p>User: { }</p>
+                      <p>User: {}</p>
                     </div>
                     {order.orderItems.map((item) => (
                       <div key={item.orderItemId} className="flex justify-between py-1 border-t text-sm">

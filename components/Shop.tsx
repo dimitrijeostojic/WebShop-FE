@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import { jwtDecode } from "jwt-decode";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import AddProductModal from "./AddProductModal";
 
