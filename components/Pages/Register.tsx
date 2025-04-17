@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import "../styles/Register.css";
-// import api from "../utils/axiosSetup";
+import "../../styles/Register.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";

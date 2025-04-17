@@ -1,9 +1,9 @@
 import React from 'react'
-import About from '../../components/About'
+import AboutPage from '../../components/Pages/AboutPage'
 
 const page = () => {
   return (
-    <About/>
+    <AboutPage/>
   )
 }
 

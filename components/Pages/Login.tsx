@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
-import "../styles/Login.css";
+import "../../styles/Login.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import Spinner from "./Spinner";
+import Spinner from "../UI/Spinner";
 
 interface FormData {
   username: string;

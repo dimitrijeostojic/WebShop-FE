@@ -1,9 +1,9 @@
 import React from 'react'
-import Home from '../../components/Home'
+import HomePage from '../../components/Pages/HomePage'
 
 const page = () => {
   return (
-    <Home/>
+    <HomePage/>
   )
 }
 
