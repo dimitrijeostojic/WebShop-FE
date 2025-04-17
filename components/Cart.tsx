@@ -34,8 +34,6 @@ const Cart = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [customer, setCustomer] = useState({ name: "", address: "", payment: "" });
-  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-
 
   const fetchCart = async () => {
     try {
@@ -76,6 +74,7 @@ const Cart = () => {
 
   const updateQuantity = async (productId: string, newQuantity: number) => {
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       await axios.put(
         `https://localhost:7273/api/Cart/cartItemQuantity/${productId}`,
         { quantity: newQuantity },
@@ -106,6 +105,7 @@ const Cart = () => {
 
   const removeFromCart = async (productId: string) => {
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       const response = await axios.delete(`https://localhost:7273/api/Cart/items/${productId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -124,11 +124,11 @@ const Cart = () => {
       toast.error("Nešto nije u redu prilikom uklanjanja proizvoda.");
     }
   };
-
-
+  
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.post("https://localhost:7273/api/Order/PlaceOrder", {}, {
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+    await axios.post("https://localhost:7273/api/Order/PlaceOrder",{}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -145,7 +145,7 @@ const Cart = () => {
         <h1 className="text-4xl font-bold text-violet-700 mb-10 text-center">🛒 Tvoja korpa</h1>
       </div>
 
-      {cart?.cartItems.length === 0 ? (
+      {!cart || cart?.cartItems.length === 0 ? (
         <div className="text-center text-gray-500 text-lg">
           Korpa je prazna. <Link href="/shop" className="text-violet-600 underline">Idi u prodavnicu</Link>
         </div>

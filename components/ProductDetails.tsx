@@ -4,6 +4,9 @@ import axios from "axios";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+import EditProductModal from "./EditProductModal";
 import Spinner from "./Spinner";
 
 interface Product {
@@ -12,24 +15,26 @@ interface Product {
   description: string;
   price: number;
   imageUrl: string;
+  createdBy: string;
+  stock: number;
 }
 
 export default function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
-
-  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-
+  const [userId, setUserId] = useState("");
+  const [role, setRole] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const router = useRouter();
 
   const fetchProduct = async () => {
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       const response = await axios.get(
         `https://localhost:7273/api/Product/${id}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setProduct(response.data);
@@ -39,13 +44,19 @@ export default function ProductDetails() {
   };
 
   useEffect(() => {
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      setUserId(decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]);
+      setRole(decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]);
+    }
     fetchProduct();
   }, [id]);
 
   const handleAddToCart = async () => {
     if (!product) return;
-
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       await axios.post(
         "https://localhost:7273/api/Cart/addItemToCart",
         {
@@ -69,13 +80,33 @@ export default function ProductDetails() {
       alert("✅ Proizvod dodat u korpu!");
       window.dispatchEvent(new Event("cart-updated"));
     } catch (error) {
-      console.error("Greška prilikom dodavanja u korpu", error);
       alert("❌ Nije moguće dodati u korpu.");
     }
   };
 
+  const deleteProduct = async () => {
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+    axios.delete(`https://localhost:7273/api/Product/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    console.log("proizvod obrisan");
+    router.push("/shop");
+  }
 
-  if (!product) return <div className="p-8"><Spinner/></div>;
+  const handleEditModalOpen = () => {
+    setIsEditModalOpen(true);
+  }
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+  }
+
+  const showAdminButtons = role === "Admin";
+  const showManagerButtons = role === "Manager" && product?.createdBy === userId;
+
+  if (!product) return <div className="p-8">Učitavanje...</div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -88,11 +119,9 @@ export default function ProductDetails() {
 
         <div className="flex flex-col justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-violet-700">
-              {product.name}
-            </h1>
+            <h1 className="text-4xl font-bold mb-4 text-violet-700">{product.name}</h1>
             <p className="text-gray-600 text-lg mb-6">{product.description}</p>
-
+            <p className="text-gray-600 text-lg mb-6">Stock: {product.stock}</p>
             <div className="text-2xl font-semibold text-green-600 mb-4">
               {product.price.toFixed(2)} RSD
             </div>
@@ -102,18 +131,37 @@ export default function ProductDetails() {
               <input
                 type="number"
                 min={1}
+                max={product.stock}
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="border border-gray-300 rounded px-4 py-2 w-24"
               />
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-lg text-lg font-semibold flex items-center gap-2 transition"
-            >
-              <ShoppingCart size={20} /> Dodaj u korpu
-            </button>
+            {role === "RegularUser" && (
+              <button
+                onClick={handleAddToCart}
+                className="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-lg text-lg font-semibold flex items-center gap-2 transition"
+              >
+                <ShoppingCart size={20} /> Dodaj u korpu
+              </button>
+            )}
+
+            {(showAdminButtons || showManagerButtons) && (
+              <div className="flex gap-4 mt-6">
+                <button className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" onClick={handleEditModalOpen}>
+                  Izmeni
+                </button>
+                <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" onClick={() => {
+                  const confirmed = window.confirm("Da li ste sigurni da želite da obrišete ovaj proizvod?");
+                  if (confirmed) {
+                    deleteProduct();
+                  }
+                }}>
+                  Obriši
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="mt-10 text-sm text-gray-500">
@@ -127,6 +175,7 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+      {isEditModalOpen && <EditProductModal isOpen = {isEditModalOpen} onClose={handleEditModalClose} product = {product}/>}
     </div>
   );
 }

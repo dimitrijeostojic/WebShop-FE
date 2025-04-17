@@ -14,7 +14,6 @@ const Navbar = () => {
   const updateCartCount = () => {
     const cartData = localStorage.getItem("cart");
     let count = 0;
-
     try {
       const cart = JSON.parse(cartData || "[]");
       if (Array.isArray(cart)) {
@@ -26,22 +25,18 @@ const Navbar = () => {
     } catch (e) {
       console.error("Neispravan format korpe u localStorage", e);
     }
-
     setCartCount(count);
   };
 
   useEffect(() => {
-    const token = document.cookie.split("=")[1];
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
     if (token) {
       const decoded: any = jwtDecode(token);
-      const extractedName =
-        decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-      const role =
-        decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      const extractedName = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
       setFirstName(extractedName);
       setRole(role);
     }
-
     updateCartCount();
     window.addEventListener("cart-updated", updateCartCount);
     return () => window.removeEventListener("cart-updated", updateCartCount);

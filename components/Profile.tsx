@@ -6,12 +6,7 @@ import { FaUserCircle } from "react-icons/fa";
 import axios from "axios";
 import ProductCard from "./ProductCard";
 
-interface DecodedToken {
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": string;
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": string;
-}
+
 
 interface Order {
   orderDate: Date;
@@ -49,16 +44,15 @@ const Profile = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const router = useRouter();
 
-  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-  const decodedToken = token ? (jwtDecode(token) as DecodedToken) : null;
 
   useEffect(() => {
-    if (token && decodedToken) {
-      const name = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-      const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
-      const id = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-      console.log(email);
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      const name = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+      const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      const email = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+      const id = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
       setName(name);
       setRole(role);
       setEmail(email);
@@ -74,10 +68,11 @@ const Profile = () => {
 
   const fetchMyOrders = async () => {
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       const res = await axios.get("https://localhost:7273/api/Order/GetMyOrders", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setOrders(res.data);
+      setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Greška prilikom preuzimanja mojih porudžbina", err);
     }
@@ -85,10 +80,11 @@ const Profile = () => {
 
   const fetchAllOrders = async () => {
     try {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       const res = await axios.get("https://localhost:7273/api/Order", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setOrders(res.data);
+      setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Greška prilikom preuzimanja svih porudžbina", err);
     }
@@ -96,14 +92,13 @@ const Profile = () => {
 
   const fetchManagerProducts = async () => {
     try {
-      const res = await axios.get("https://localhost:7273/api/Product", {
+      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+      const res = await axios.get("https://localhost:7273/api/Product/myproducts", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-console.log(res.data);
-console.log(res.data.filter((item: Product) => item.createdBy === id))
-// setProducts();
-console.log(products);
+
+      setProducts(res.data);
 
     } catch (err) {
       console.error("Greška prilikom preuzimanja proizvoda menadžera", err);
@@ -114,6 +109,7 @@ console.log(products);
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     router.push("/login");
   };
+
 
   if (!name || !role || !email) {
     return <div className="text-center mt-10">Učitavanje profila...</div>;
@@ -148,6 +144,7 @@ console.log(products);
                   <div key={order.orderId} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-gray-50">
                     <div className="flex justify-between text-sm text-gray-600 mb-2">
                       <span>Datum: {new Date(order.orderDate).toLocaleDateString()}</span>
+                      <p>User: {}</p>
                     </div>
                     {order.orderItems.map((item) => (
                       <div key={item.orderItemId} className="flex justify-between py-1 border-t text-sm">
@@ -161,8 +158,8 @@ console.log(products);
                       </div>
                     ))}
                     <p className="text-right text-sm font-semibold text-gray-700 mt-2">
-      Ukupno: {order.orderItems.reduce((sum, item) => sum + item.quantity * item.product.price, 0).toFixed(2)} RSD
-    </p>
+                      Ukupno: {order.orderItems.reduce((sum, item) => sum + item.quantity * item.product.price, 0).toFixed(2)} RSD
+                    </p>
                   </div>
                 ))}
               </div>
@@ -179,15 +176,15 @@ console.log(products);
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {products.map((prod, index) => (
-            <ProductCard
-              key={index}
-              productId={prod.productId}
-              description={prod.description}
-              name={prod.name}
-              imageUrl={prod.imageUrl}
-              price={prod.price}
-            />
-          ))}
+                  <ProductCard
+                    key={index}
+                    productId={prod.productId}
+                    description={prod.description}
+                    name={prod.name}
+                    imageUrl={prod.imageUrl}
+                    price={prod.price}
+                  />
+                ))}
               </div>
             )}
           </div>

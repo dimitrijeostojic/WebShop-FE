@@ -17,11 +17,7 @@ const Categories = () => {
 
     const fetchCategories = async () => {
         try {
-          const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
-    
+          const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
           const response = await axios.get("https://localhost:7273/api/Category", {
             headers: {
               Authorization: `Bearer ${token}`, // Dodaj token u zaglavlje

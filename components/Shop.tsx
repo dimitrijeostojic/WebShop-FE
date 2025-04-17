@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import { jwtDecode } from "jwt-decode";
-import { useRouter } from "next/navigation";
 import axios from "axios";
+import AddProductModal from "./AddProductModal";
 
 interface Product {
   productId: string;
@@ -11,13 +11,6 @@ interface Product {
   description: string;
   price: number;
   imageUrl: string;
-}
-
-interface DecodedToken {
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
-  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": string;
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
-  exp: number;
 }
 
 const Shop = () => {
@@ -28,8 +21,8 @@ const Shop = () => {
   const [isAscending, setIsAscending] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(8);
-  const [userRole, setUserRole] = useState("");
-  const router = useRouter();
+  const [role, setRole] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchProducts = async () => {
     try {
@@ -54,6 +47,11 @@ const Shop = () => {
   };
 
   useEffect(() => {
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+    if(token){
+      const decoded: any = jwtDecode(token);
+      setRole(decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]);
+    }
     fetchProducts();
   }, [filterOn, filterQuery, sortBy, isAscending, pageNumber, pageSize]);
 
@@ -77,6 +75,14 @@ const Shop = () => {
   const changePageSize = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPageSize(Number(e.target.value));
     setPageNumber(1);
+  };
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
   };
 
   const nextPage = () => setPageNumber((prev) => prev + 1);
@@ -106,6 +112,12 @@ const Shop = () => {
           onChange={handleFilterInput}
           className="border rounded px-4 py-2 w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-violet-400"
         />
+
+        {role ==="Manager" && (
+          <button className="px-4 py-2 bg-violet-500 text-white rounded hover:bg-violet-600" onClick={handleModalOpen}>
+            Dodaj Proizvod
+          </button>
+        )}
 
         <select
           className="border px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -166,6 +178,8 @@ const Shop = () => {
           <option value="12">12 po strani</option>
         </select>
       </div>
+
+      <AddProductModal isOpen ={isModalOpen} onClose = {handleModalClose}/>
     </div>
   );
 };
