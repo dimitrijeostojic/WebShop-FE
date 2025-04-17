@@ -13,7 +13,7 @@ interface Cart {
   cartItems: CartItem[];
 }
 
-interface CartItem{
+interface CartItem {
   cartId: string;
   cartItemId: string;
   product: Product;
@@ -21,7 +21,7 @@ interface CartItem{
   quantity: number;
 }
 
-interface Product{
+interface Product {
   description: string;
   imageUrl: string;
   name: string;
@@ -34,17 +34,16 @@ const Cart = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [customer, setCustomer] = useState({ name: "", address: "", payment: "" });
+  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
 
 
   const fetchCart = async () => {
     try {
-      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
       const response = await axios.get("https://localhost:7273/api/Cart/myCart", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
       setCart(response.data);
     } catch (error) {
       console.error("Failed to fetch cart from backend", error);
@@ -73,13 +72,11 @@ const Cart = () => {
     window.dispatchEvent(new Event("cart-updated"));
   }, [cart]);
 
- 
+
 
   const updateQuantity = async (productId: string, newQuantity: number) => {
     try {
-      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-      
-      const response = await axios.put(
+      await axios.put(
         `https://localhost:7273/api/Cart/cartItemQuantity/${productId}`,
         { quantity: newQuantity },
         {
@@ -88,16 +85,15 @@ const Cart = () => {
           },
         }
       );
-      console.log(response.data);
-  
+
       const updatedCartItems = cart?.cartItems.map((item) =>
         item.productId === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
       );
-  
+
       if (cart && updatedCartItems) {
         setCart({ ...cart, cartItems: updatedCartItems });
       }
-  
+
       toast.success("Količina ažurirana!");
     } catch (error) {
       console.error("Failed to update cart item quantity", error);
@@ -105,44 +101,38 @@ const Cart = () => {
     }
   };
 
-  
-  
+
+
 
   const removeFromCart = async (productId: string) => {
     try {
-      const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-  
       const response = await axios.delete(`https://localhost:7273/api/Cart/items/${productId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      console.log(response.data);
-  
       const updatedCartItems = cart?.cartItems.filter(item => item.productId !== productId);
-  
+
       if (cart && updatedCartItems) {
         setCart({ ...cart, cartItems: updatedCartItems });
       }
-  
+
       toast.success(`${response.data.message}`);
     } catch (error) {
       console.error("Failed to remove item from cart", error);
       toast.error("Nešto nije u redu prilikom uklanjanja proizvoda.");
     }
   };
-  
+
 
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
-    const response = await axios.post("https://localhost:7273/api/Order/PlaceOrder",{}, {
+    await axios.post("https://localhost:7273/api/Order/PlaceOrder", {}, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response.data);
     toast.success("Porudžbina uspešno poslata! 🎉");
     setCart(undefined);
     setShowCheckout(false);
@@ -151,7 +141,9 @@ const Cart = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-20">
-      <h1 className="text-4xl font-bold text-violet-700 mb-10 text-center">🛒 Tvoja korpa</h1>
+      <div className="cart-heading">
+        <h1 className="text-4xl font-bold text-violet-700 mb-10 text-center">🛒 Tvoja korpa</h1>
+      </div>
 
       {cart?.cartItems.length === 0 ? (
         <div className="text-center text-gray-500 text-lg">

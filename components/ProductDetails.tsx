@@ -4,6 +4,7 @@ import axios from "axios";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
+import Spinner from "./Spinner";
 
 interface Product {
   productId: string;
@@ -18,10 +19,7 @@ export default function ProductDetails() {
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  const token = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("token="))
-    ?.split("=")[1];
+  const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
 
 
   const fetchProduct = async () => {
@@ -60,20 +58,14 @@ export default function ProductDetails() {
           },
         }
       );
-
       const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-
       const existing = cartItems.find((item: any) => item.productId === product.productId);
-
       if (existing) {
         existing.quantity += quantity;
       } else {
         cartItems.push({ ...product, quantity });
       }
-
       localStorage.setItem("cart", JSON.stringify(cartItems));
-
-
       alert("✅ Proizvod dodat u korpu!");
       window.dispatchEvent(new Event("cart-updated"));
     } catch (error) {
@@ -83,7 +75,7 @@ export default function ProductDetails() {
   };
 
 
-  if (!product) return <div className="p-8">Učitavanje...</div>;
+  if (!product) return <div className="p-8"><Spinner/></div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">

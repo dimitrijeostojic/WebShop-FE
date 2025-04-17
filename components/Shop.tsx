@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-// import api from "../utils/axiosSetup";
 import ProductCard from "@/components/ProductCard";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";

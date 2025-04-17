@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "../styles/Login.css";
-// import api from "../utils/axiosSetup";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Spinner from "./Spinner";
 
 interface FormData {
   username: string;
@@ -16,7 +16,7 @@ const Login = () => {
     username: "",
     password: "",
   });
-
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const router = useRouter();
@@ -31,16 +31,14 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(""); // Resetuj greške pre novog pokušaja prijave
+    setError("");
+    setLoading(true);
     try {
       const response = await axios.post(
         "https://localhost:7273/api/Auth/Login",
         formData
       );
-      // Uspešan login
       document.cookie = `token=${response.data.jwtToken}; path=/`;
-      // document.cookie = `refreshToken=${response.data.refreshToken}; path=/`;
-      console.log("Redirecting to /home...");
       router.push("/home");
     } catch (error: any) {
       if (error.response?.data?.errors) {
@@ -49,6 +47,8 @@ const Login = () => {
       } else {
         setError("This user does not exist.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,14 +78,20 @@ const Login = () => {
             required
           />
         </div>
+
         <div className="login-button">
-          <button
-            className="bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-            type="submit"
-          >
-            Login
-          </button>
+          {loading ? (
+            <Spinner/>
+          ) : (
+            <button
+              className="bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+              type="submit"
+            >
+              Login
+            </button>
+          )}
         </div>
+
         <div className="go-to-registration">
           <p className="text-sm text-gray-600 text-center mt-4">
             You don't have an account? <br /> Please{" "}

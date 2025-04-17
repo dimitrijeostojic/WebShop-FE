@@ -58,7 +58,7 @@ const Profile = () => {
       const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
       const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
       const id = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-      console.log(id);
+      console.log(email);
       setName(name);
       setRole(role);
       setEmail(email);
@@ -66,6 +66,9 @@ const Profile = () => {
       if (role === "RegularUser") fetchMyOrders();
       if (role === "Admin") fetchAllOrders();
       if (role === "Manager") fetchManagerProducts();
+      console.log(name)
+      console.log(role)
+      console.log(email)
     }
   }, []);
 
